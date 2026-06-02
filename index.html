@@ -1380,7 +1380,7 @@
   updateSim();
 
   // CTA
-  function handleCta() {
+  async function handleCta() {
     const prenom = document.getElementById('input-prenom').value.trim();
     const nom = document.getElementById('input-nom').value.trim();
     const email = document.getElementById('email-input').value.trim();
@@ -1388,7 +1388,33 @@
     if (!prenom || !nom) { alert('Merci de renseigner votre prénom et nom.'); return; }
     if (!email || !email.includes('@')) { alert('Veuillez saisir une adresse email valide.'); return; }
     if (!tel) { alert('Merci de renseigner votre numéro de téléphone.'); return; }
-    alert('Merci ' + prenom + ' ! Un conseiller vous contactera sous 24h au ' + tel + ' ou à l\'adresse ' + email + '.');
+
+    const btn = document.querySelector('.cta-form-full button');
+    btn.textContent = 'Envoi en cours…';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('https://formspree.io/f/xzdwnldv', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prenom, nom, email, telephone: tel })
+      });
+      if (res.ok) {
+        btn.textContent = '✓ Message envoyé !';
+        btn.style.background = '#4ade80';
+        document.getElementById('input-prenom').value = '';
+        document.getElementById('input-nom').value = '';
+        document.getElementById('email-input').value = '';
+        document.getElementById('input-tel').value = '';
+        setTimeout(() => { btn.textContent = 'Être contacté →'; btn.style.background = 'var(--gold)'; btn.disabled = false; }, 4000);
+      } else {
+        throw new Error();
+      }
+    } catch(e) {
+      btn.textContent = 'Être contacté →';
+      btn.disabled = false;
+      alert('Une erreur est survenue. Veuillez réessayer ou nous contacter directement à contact@elitepatrimoniale.fr');
+    }
   }
 
   // Scroll reveal
